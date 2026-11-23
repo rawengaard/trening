@@ -290,16 +290,22 @@ let BM=jget('bm',{});                   // {planKey: ukenummer}
 let rerender=false;const jumped={};
 const LONGSET=['l','lf','lr','ms'];
 const BMICON='<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>';
-/* Flytt ukens langtur til valgt dag; øktene på den dagen bytter plass med langturen */
+/* Roter hele uka slik at langturen havner på valgt dag. Rekkefølgen beholdes (det som kommer etter langturen i boka, kommer fortsatt etter),
+   og alle uker roteres likt, så overgangen mellom uker er like god som i originalen. Konkurranseuker roteres ikke. */
 function arrangeWeek(days){
-  const out=days.map(d=>d.slice());
-  const li=out.findIndex(d=>d.some(it=>LONGSET.includes(it.code)));
-  let L=li,moved=false;
-  if(li>=0&&li!==LONGDAY&&!out[li].some(it=>it.race)&&!out[LONGDAY].some(it=>it.race)){
-    [out[li],out[LONGDAY]]=[out[LONGDAY],out[li]];L=LONGDAY;moved=true;
+  let out=days.map(d=>d.slice());
+  const li0=out.findIndex(d=>d.some(it=>LONGSET.includes(it.code)));
+  const hasRace=out.some(d=>d.some(it=>it.race));
+  const li=li0>=0?li0:6;
+  let moved=false,raceNote=false;
+  if(LONGDAY!==li){
+    if(hasRace)raceNote=true;
+    else{const k=(LONGDAY-li+7)%7;out=out.map((_,i)=>days[(i-k+7)%7].slice());moved=true}
   }
+  const L=moved||li0===LONGDAY?LONGDAY:li0;
   let warn='';
-  if(L>=0){
+  if(raceNote)warn='Konkurranseuke: denne uka er ikke flyttet, den følger originalplanen.';
+  else if(L>=0&&li0>=0){
     const hard=[L-1,L+1].filter(i=>i>=0&&i<7&&out[i].some(it=>!it.race&&!LONGSET.includes(it.code)&&['mod','high'].includes(itemCat(it))));
     if(hard.length)warn=`Langturen ligger like ved en hard økt (${hard.map(i=>DAYS[i]).join(' og ')}). Vurder å bytte dag for å få nok hvile mellom de tøffe øktene.`;
   }
@@ -361,7 +367,7 @@ views.plan=(q,key)=>{
     <div class="card"><b>Dag for langtur</b>
      <div class="muted small">Velg hvilken dag langturen skal ligge på. Langturen (også langtur med fartslek, langtur med rask avslutning og maratonsimulator) flyttes dit, og øktene som lå på den dagen bytter plass med den. Valget gjelder alle planer.</div>
      <div class="pills" role="group" aria-label="Dag for langtur">${DAYS.map((d,i)=>`<button data-longday="${i}" aria-pressed="${i===LONGDAY}">${d}</button>`).join('')}</div>
-     ${!P.weeks.some(w=>w.days.some(d=>d.some(it=>LONGSET.includes(it.code))))?`<div class="note">Denne planen har ingen egne langturer, så valget påvirker den ikke.</div>`:LONGDAY!==6?`<div class="note">Langturen ligger på ${['mandag','tirsdag','onsdag','torsdag','fredag','lørdag','søndag'][LONGDAY]}. Øktene som normalt ligger der, er flyttet til søndag.</div>`:''}</div>
+     ${!P.weeks.some(w=>w.days.some(d=>d.some(it=>LONGSET.includes(it.code))))?`<div class="note">Denne planen har ingen egne langturer, så valget påvirker den ikke.</div>`:LONGDAY!==6?`<div class="note">Langturen ligger på ${['mandag','tirsdag','onsdag','torsdag','fredag','lørdag','søndag'][LONGDAY]}. Hele uka er forskjøvet med samme rekkefølge som i boka. Dagen etter langturen er den samme økten som boka har på mandag. Konkurranseuker følger originalplanen.</div>`:''}</div>
     <div class="card"><b>Bokmerke</b>
      <div class="muted small">Trykk på bokmerket ved en uke for å huske hvor du er. Du får ett bokmerke per plan, og det vises på startsiden under Planer.</div>
      ${BM[key]?`<button class="card" data-gobm="${BM[key]}" style="margin:10px 0 0;font-weight:700;color:var(--brand)">Gå til bokmerket – uke ${BM[key]}</button>`:''}</div>
@@ -452,7 +458,7 @@ views.okt=(q,id)=>{
   ${T?`<h2>Slik gjennomfører du økten</h2><div class="card">${rpeHint()}<ol class="how">${T.how.map(h=>`<li>${esc(h)}</li>`).join('')}<li>Bruk opplevd anstrengelse til å finjustere innsatsen underveis i hele økten.</li></ol>
     ${!LT?`<p class="muted small" style="margin:8px 0 0">Legg inn laktatterskelpulsen din under <a href="#/teori" style="color:var(--brand)">Teori</a> for å se pulsområdene i slag/min.</p>`:''}</div>
   <h2>Om øktypen</h2><div class="card"><p style="margin:0">${esc(T.desc)}</p></div>`:''}
-  ${uses?`<h2>Brukes i planene</h2><div class="card">${uses}</div>`:''}`;
+`;
 };
 
 
