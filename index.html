@@ -161,15 +161,16 @@ header .share{width:44px;height:44px;border:0;background:none;color:var(--brand)
 header .share svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* styrke, logg, skjema */
-:root{--str:#6d5bd0}
-@media (prefers-color-scheme:dark){:root{--str:#9a8cf0}}
+:root{--str:#6d5bd0;--kort:#c2417d}
+@media (prefers-color-scheme:dark){:root{--str:#9a8cf0;--kort:#e879b0}}
 main{padding-bottom:110px}
 nav.tabs button{font-size:12px;padding:0 2px}
 a.chip.str{border-left-color:var(--str)}
 a.chip.done{opacity:.85}.ok{color:var(--brand);font-weight:800}
 .day.today{background:color-mix(in srgb,var(--brand) 9%,transparent);border-radius:8px}
 .dn2{width:46px;line-height:1.2;padding-top:6px;font-size:13px}
-a.card.t.str{--c:var(--str)}
+a.card.t.str{--c:var(--str)}a.card.t.kort{--c:var(--kort)}.badge.kort{background:color-mix(in srgb,var(--kort) 24%,transparent);color:var(--ink)}
+.sq.k{background:var(--kort)}.exn.k{background:var(--kort)}.stile.k{background:var(--kort);min-height:30px}.lsq.k{background:var(--kort);transform:rotate(45deg) scale(.8)}.entry.kort{border-left-color:var(--kort)}.tile.kort .n{color:var(--kort)}.tile.wide{grid-column:1/-1}
 .badge.str{background:color-mix(in srgb,var(--str) 24%,transparent);color:var(--ink)}
 a.card.minplan{background:var(--soft);border-color:var(--brand)}
 .primary{display:block;width:100%;min-height:50px;border:0;border-radius:14px;background:var(--brand);color:var(--brand-ink);font:700 16px system-ui;cursor:pointer;margin:10px 0}
@@ -509,7 +510,11 @@ const diffDays=(a,b)=>Math.round((parseD(a)-parseD(b))/864e5);
 const validD=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'');
 
 let STR=jget('styrke',null);
-if(!Array.isArray(STR)){STR=JSON.parse(JSON.stringify(SEED_STYRKE));jset('styrke',STR)}
+if(!Array.isArray(STR)){STR=JSON.parse(JSON.stringify(SEED_STYRKE));jset('styrke',STR);jset('seeded',SEED_STYRKE.map(x=>x.id))}
+else{/* nye eksempeløkter legges inn én gang hos eksisterende brukere */
+  const seen=jget('seeded',['str-a','str-b']);let add=false;
+  SEED_STYRKE.forEach(x=>{if(!seen.includes(x.id)){seen.push(x.id);if(!STR.some(y=>y.id===x.id)){STR.push(JSON.parse(JSON.stringify(x)));add=true}}});
+  jset('seeded',seen);if(add)jset('styrke',STR)}
 let LOG=jget('logg',[]);if(!Array.isArray(LOG))LOG=[];
 const saveStr=()=>jset('styrke',STR),saveLog=()=>jset('logg',LOG);
 
@@ -522,15 +527,17 @@ function estMin(s){
 }
 const entryMin=e=>e.min||e.pmin||0;
 const entryEst=e=>!e.min&&e.est;
-const catClass=e=>e.kind==='str'?'str':e.cat;
+const catClass=e=>e.kind==='str'?(isKort(e)?'kort':'str'):e.cat;
 const entryTitle=e=>e.kind==='str'?e.name:e.name;
 const strById=id=>STR.find(x=>x.id===id);
+const isKortS=s=>!!s&&s.cat==='Kort økt';
+const isKort=e=>e.kind==='str'&&(e.kort!==undefined?e.kort:isKortS(strById(e.ref)));
 const logCount=(kind,ref)=>LOG.filter(e=>e.kind===kind&&e.ref===ref);
 
 function makeEntry(kind,ref,date,min,note,id){
   if(kind==='str'){
     const s=strById(ref);
-    return {id:id||uid(),date,kind,ref,name:s?s.name:'Styrkeøkt',cat:'str',type:'str',pmin:s&&s.dur||0,min:min||null,note:note||''};
+    return {id:id||uid(),date,kind,ref,name:s?s.name:'Styrkeøkt',cat:'str',type:'str',kort:isKortS(s),pmin:s&&s.dur||0,min:min||null,note:note||''};
   }
   const s=SESSIONS[ref];
   return {id:id||uid(),date,kind:'run',ref,name:s.name,cat:s.cat,type:s.type,pmin:estMin(s),est:!s.min,min:min||null,note:note||''};
@@ -632,8 +639,8 @@ views.minplan.after=()=>{
 
 /* ---------- Styrkeøkter ---------- */
 const strVolume=s=>s.ex.reduce((a,e)=>a+(+e.sets||0),0);
-function setSquares(e,big){
-  return Array.from({length:Math.min(+e.sets||0,12)},()=>`<i class="sq${big?' big':''}"></i>`).join('');
+function setSquares(e,big,k){
+  return Array.from({length:Math.min(+e.sets||0,12)},()=>`<i class="sq${big?' big':''}${k?' k':''}"></i>`).join('');
 }
 views.styrke=()=>{
   head('Styrkeøkter');
@@ -641,7 +648,7 @@ views.styrke=()=>{
   const body=!STR.length?`<div class="card"><p>Ingen styrkeøkter ennå.</p><button class="primary" data-seed>Legg inn eksempeløktene</button></div>`:
    cats.map(c=>`<h2>${esc(c)}</h2>`+STR.filter(s=>(s.cat||'Annet')===c).map(s=>{
      const n=logCount('str',s.id).length;
-     return `<a class="card t str" href="#/str/${s.id}"><div class="row"><div class="grow"><h3>${esc(s.name)}</h3>
+     return `<a class="card t ${isKortS(s)?'kort':'str'}" href="#/str/${s.id}"><div class="row"><div class="grow"><h3>${esc(s.name)}</h3>
       <div class="muted small">${s.ex.length} øvelser · ${strVolume(s)} sett${s.dur?` · ca. ${s.dur} min`:''}${n?` · gjennomført ${n} ${n===1?'gang':'ganger'}`:''}</div>
       <div class="exnames small muted">${s.ex.slice(0,4).map(e=>esc(e.n.split(',')[0].split('(')[0].trim())).join(' · ')}${s.ex.length>4?' …':''}</div></div><span class="chev">›</span></div></a>`}).join('')).join('');
   return `<p class="muted small" style="margin:0 2px 4px">Styrkeøkter lagres i nettleseren. Eksempeløktene er lagt inn fra planen din – du kan endre, duplisere og slette dem, og lage egne.</p>
@@ -656,14 +663,14 @@ views.str=(q,id)=>{
   head(s.name);
   const done=logCount('str',id).sort((a,b)=>b.date<a.date?-1:1);
   const nom=!LOG.length?'':'';
-  return `<div class="card"><div class="row" style="flex-wrap:wrap;gap:6px"><span class="badge str">Styrke</span><span class="badge">${esc(s.cat||'Annet')}</span>${s.dur?`<span class="badge">ca. ${s.dur} min</span>`:''}</div>
+  return `<div class="card"><div class="row" style="flex-wrap:wrap;gap:6px"><span class="badge ${isKortS(s)?'kort':'str'}">${isKortS(s)?'Kort økt':'Styrke'}</span>${isKortS(s)?'':`<span class="badge">${esc(s.cat||'Annet')}</span>`}${s.dur?`<span class="badge">ca. ${s.dur} min</span>`:''}</div>
     <div class="muted small" style="margin-top:8px">${s.ex.length} øvelser · ${strVolume(s)} sett${done.length?` · gjennomført ${done.length} ${done.length===1?'gang':'ganger'}, sist ${fmtD(done[0].date)}`:''}</div>
     ${s.note?`<p class="small" style="margin:8px 0 0">${esc(s.note)}</p>`:''}</div>
    <button class="primary" data-log="str:${id}${validD(q.d)?':'+q.d:''}">Logg økten som gjennomført${validD(q.d)?' ('+fmtDL(q.d)+')':''}</button>
-   <h2>Øvelser</h2><div class="card" style="padding:4px 14px">${s.ex.map((e,i)=>`<div class="exrow"><div class="exh"><span class="exn">${i+1}</span><b>${esc(e.n)}</b></div>
-     <div class="exsets"><span class="sqs" aria-label="${e.sets} sett">${setSquares(e,true)}</span><span class="small"><b>${e.sets} × ${esc(e.reps)}</b>${e.load?` · ${esc(e.load)}`:''}</span></div>
+   <h2>Øvelser</h2><div class="card" style="padding:4px 14px">${s.ex.map((e,i)=>`<div class="exrow"><div class="exh"><span class="exn${isKortS(s)?' k':''}">${i+1}</span><b>${esc(e.n)}</b></div>
+     <div class="exsets"><span class="sqs" aria-label="${e.sets} sett">${setSquares(e,true,isKortS(s))}</span><span class="small"><b>${e.sets} × ${esc(e.reps)}</b>${e.load?` · ${esc(e.load)}`:''}</span></div>
      ${e.note?`<div class="muted small">${esc(e.note)}</div>`:''}</div>`).join('')}
-    <div class="legend" style="margin:10px 0 4px"><span><i class="sq" style="width:10px;height:10px"></i>= ett sett</span></div></div>
+    <div class="legend" style="margin:10px 0 4px"><span><i class="sq${isKortS(s)?' k':''}" style="width:10px;height:10px"></i>= ${isKortS(s)?'én runde':'ett sett'}</span></div></div>
    ${done.length?`<h2>Loggførte ganger</h2><div class="card">${done.slice(0,5).map(e=>`<button class="lrowbtn" data-ledit="${e.id}"><b>${fmtDL(e.date)}</b>${e.min?` · ${e.min} min`:''}${e.note?`<span class="muted small"> · ${esc(e.note)}</span>`:''}</button>`).join('')}</div>`:''}
    <div class="row" style="gap:8px;margin-top:14px;flex-wrap:wrap"><button class="ghost" data-editstr="${id}">Rediger</button><button class="ghost" data-dupstr="${id}">Dupliser</button><button class="ghost danger" data-delstr="${id}">Slett</button></div>`;
 };
@@ -707,13 +714,13 @@ function openStrForm(id,copy){
 let LOGRANGE='week',LOGSEL=null;
 const mondayOf=s=>addDays(s,-dowOf(s));
 function entriesIn(a,b){return LOG.filter(e=>e.date>=a&&e.date<=b)}
-function logIcon(e){return e.kind==='str'?`<i class="lsq" title="${esc(e.name)}"></i>`:`<i class="lci ${e.cat}" title="${esc(e.name)}"></i>`}
+function logIcon(e){return e.kind==='str'?`<i class="lsq${isKort(e)?' k':''}" title="${esc(e.name)}"></i>`:`<i class="lci ${e.cat}" title="${esc(e.name)}"></i>`}
 function runBar(e,scale){
   const m=entryMin(e),w=Math.round(46+54*Math.min(1,(m||30)/scale));
   return `<button class="lbar ${e.cat}" style="width:${w}%" data-ledit="${e.id}"><b>${esc(SHORT[e.type]||e.name)}</b><span>${m?(entryEst(e)?'ca. ':'')+m+' min':''}</span></button>`;
 }
 function strTile(e){
-  return `<button class="stile" data-ledit="${e.id}"><b>${esc(e.name.replace(/^Økt\s+/,'').replace(/\s+–.*$/,'')||'Styrke')}</b><span>${entryMin(e)?entryMin(e)+' min':''}</span></button>`;
+  return `<button class="stile${isKort(e)?' k':''}" data-ledit="${e.id}"><b>${esc(e.name.replace(/^Økt\s+/,'').replace(/\s+–.*$/,'')||(isKort(e)?'Kort':'Styrke'))}</b><span>${entryMin(e)?entryMin(e)+' min':''}</span></button>`;
 }
 function entryRow(e){
   return `<button class="entry ${catClass(e)}" data-ledit="${e.id}"><span class="mk">${logIcon(e)}</span><span class="grow"><b>${esc(e.name)}</b><br><span class="muted small">${fmtDL(e.date)}${entryMin(e)?' · '+(entryEst(e)?'ca. ':'')+entryMin(e)+' min':''}${e.note?' · '+esc(e.note):''}</span></span><span class="chev">›</span></button>`;
@@ -726,19 +733,20 @@ views.logg=()=>{
   const to=week?t:addDays(mondayOf(t),6);
   const list=entriesIn(from,week?t:to).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
   const win=entriesIn(week?from:addDays(t,-29),t);
-  const runs=win.filter(e=>e.kind==='run'),strs=win.filter(e=>e.kind==='str');
+  const runs=win.filter(e=>e.kind==='run'),strs=win.filter(e=>e.kind==='str'&&!isKort(e)),korts=win.filter(e=>isKort(e));
   const runMin=runs.reduce((a,e)=>a+entryMin(e),0);
   const last=LOG.length?LOG.map(e=>e.date).filter(d=>d<=t).sort().pop():null;
   const since=last?diffDays(t,last):null;
   const tiles=`<div class="tiles"><div class="tile"><div class="n">${runs.length}</div><div class="muted small">Løpeøkter</div></div>
    <div class="tile str"><div class="n">${strs.length}</div><div class="muted small">Styrkeøkter</div></div>
+   <div class="tile kort"><div class="n">${korts.length}</div><div class="muted small">Korte økter</div></div>
    <div class="tile"><div class="n">${runMin>=60?Math.floor(runMin/60)+' t '+(runMin%60)+' min':runMin+' min'}</div><div class="muted small">Tid løping</div></div>
-   <div class="tile"><div class="n">${since==null?'–':since}</div><div class="muted small">${since===1?'dag':'dager'} siden siste økt</div></div></div>`;
+   <div class="tile wide"><div class="n">${since==null?'–':since}</div><div class="muted small">${since===1?'dag':'dager'} siden siste økt</div></div></div>`;
   let viz='';
   if(week){
     const days=Array.from({length:7},(_,i)=>addDays(from,i));
     const scale=Math.max(60,...runs.map(entryMin));
-    viz=`<div class="lgrid"><div class="lh"></div><div class="lh">Løp</div><div class="lh">Styrke</div>`+days.map(d=>{
+    viz=`<div class="lgrid"><div class="lh"></div><div class="lh">Løp</div><div class="lh">Styrke og kort</div>`+days.map(d=>{
       const es=LOG.filter(e=>e.date===d);const r=es.filter(e=>e.kind==='run'),s=es.filter(e=>e.kind==='str');
       return `<div class="ld${d===t?' today':''}"><b>${DAYS[dowOf(d)]}</b><span class="muted small">${fmtD(d).replace(' ','&nbsp;')}</span></div>
        <div class="lc">${r.length?r.map(e=>runBar(e,scale)).join(''):'<span class="dash">–</span>'}</div>
@@ -747,17 +755,17 @@ views.logg=()=>{
     const wks=Array.from({length:5},(_,i)=>addDays(from,i*7));
     const cell=d=>{const es=LOG.filter(e=>e.date===d);
       return `<button class="cc${d===t?' today':''}${d>t?' fut':''}${LOGSEL===d?' sel':''}" data-lsel="${d}" aria-label="${fmtDL(d)}: ${es.length} økter"><span class="dn3">${parseD(d).getDate()}</span><span class="ics">${es.map(logIcon).join('')}</span></button>`};
-    const wtot=wks.map(w=>{const es=entriesIn(w,addDays(w,6));const o={low:0,mod:0,high:0,alt:0,str:0};
-      es.forEach(e=>{if(e.kind==='str')o.str++;else o[e.cat]=(o[e.cat]||0)+entryMin(e)});return o});
+    const wtot=wks.map(w=>{const es=entriesIn(w,addDays(w,6));const o={low:0,mod:0,high:0,alt:0,str:0,kort:0};
+      es.forEach(e=>{if(e.kind==='str'){if(isKort(e))o.kort++;else o.str++}else o[e.cat]=(o[e.cat]||0)+entryMin(e)});return o});
     const mx=Math.max(60,...wtot.map(o=>o.low+o.mod+o.high+o.alt));
     viz=`<div class="cal"><div class="calh">${DAYS.map(d=>`<span>${d}</span>`).join('')}</div>${wks.map(w=>`<div class="calw">${Array.from({length:7},(_,i)=>cell(addDays(w,i))).join('')}</div>`).join('')}</div>
      ${LOGSEL?`<div class="card" style="margin-top:10px"><b>${fmtDL(LOGSEL)}</b>${LOG.filter(e=>e.date===LOGSEL).map(entryRow).join('')||'<div class="muted small" style="margin:6px 0">Ingen økter denne dagen.</div>'}<button class="ghost" data-log="new::${LOGSEL}" style="margin-top:6px">Logg økt denne dagen</button></div>`:''}
      <h2>Tid løping per uke</h2><div class="wbars">${wks.map((w,i)=>{const o=wtot[i],tot=o.low+o.mod+o.high+o.alt;
        return `<div class="wb"><div class="wbv"><span class="wtot">${tot||''}</span><div class="stack">${['high','mod','low','alt'].map(c=>o[c]?`<i class="${c}" style="height:${Math.max(3,Math.round(o[c]/mx*100))}px"></i>`:'').join('')}</div></div>
-       <div class="small muted">${parseD(w).getDate()}. ${MON[parseD(w).getMonth()]}</div><div class="ws">${o.str?`<i class="lsq"></i>×${o.str}`:''}</div></div>`}).join('')}</div>
-     <div class="muted small" style="margin:4px 2px">Minutter per uke (uker som starter mandag). Firkanter under søylene viser antall styrkeøkter.</div>`;
+       <div class="small muted">${parseD(w).getDate()}. ${MON[parseD(w).getMonth()]}</div><div class="ws">${o.str?`<i class="lsq"></i>×${o.str} `:''}${o.kort?`<i class="lsq k"></i>×${o.kort}`:''}</div></div>`}).join('')}</div>
+     <div class="muted small" style="margin:4px 2px">Minutter per uke (uker som starter mandag). Lilla firkanter under søylene viser styrkeøkter, rosa rutere korte økter.</div>`;
   }
-  const lg=`<div class="legend" style="margin:10px 2px"><span><i class="lci low"></i>Rolig</span><span><i class="lci mod"></i>Moderat</span><span><i class="lci high"></i>Høy</span><span><i class="lci alt"></i>Annen trening</span><span><i class="lsq"></i>Styrke</span></div>`;
+  const lg=`<div class="legend" style="margin:10px 2px"><span><i class="lci low"></i>Rolig</span><span><i class="lci mod"></i>Moderat</span><span><i class="lci high"></i>Høy</span><span><i class="lci alt"></i>Annen trening</span><span><i class="lsq"></i>Styrke</span><span><i class="lsq k"></i>Kort økt</span></div>`;
   return `<div class="seg"><button data-lr="week" aria-pressed="${week}">Siste 7 dager</button><button data-lr="month" aria-pressed="${!week}">Siste måned</button></div>
    ${tiles}<h2>${week?'Uka som gikk':'Måneden som gikk'}</h2><div class="card" style="padding:12px 10px">${viz}${lg}</div>
    <h2>Gjennomførte økter</h2>${list.length?`<div class="card">${list.map(entryRow).join('')}</div>`:`<div class="card empty">Ingen loggførte økter i perioden. Trykk «Logg økt» for å legge til, eller åpne en økt og velg «Logg økten».</div>`}
