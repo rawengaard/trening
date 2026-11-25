@@ -493,7 +493,7 @@ const MINPLAN={
   mønsterNote:'Er beina stive etter lørdagens økt, ta det rolig på mandagens langtur i stedet for å hoppe over den. Juledagene kan flyttes fritt, men behold minst én dag mellom løpene.',
   weeks:[
    {n:1,start:'2026-11-23',label:'23.–29. nov',min:90,days:[[REST_],[ST_('str-b')],[R_('g6')],[X_(30)],[R_('g6')],[ST_('str-a')],[REST_]],note:'Landing etter 3 t 15 min-uka. Bare 2 løp, ingen kvalitet. Styrke: ett sett mindre per øvelse.'},
-   {n:2,start:'2026-11-30',label:'30. nov–6. des',min:120,days:[[R_('g8')],[ST_('str-b')],[R_('g4')],[X_(30)],[R_('a2')],[ST_('str-a')],[REST_]],note:'Tre løp, langtur mandag. Første 5 min i sone 3. Styrke: ett sett mindre per øvelse.'},
+   {n:2,start:'2026-11-30',label:'30. nov–6. des',min:120,days:[[R_('g8')],[ST_('str-b')],[R_('g4')],[X_(30)],[R_('a2')],[ST_('str-a')],[REST_]],note:'Tre løp. Mandag: langtur (Grunnøkt 8: 5 min sone 1, 45 min sone 2, 5 min sone 1). Fredag: rask avslutning, bare siste 5 min i sone 3. Styrke: ett sett mindre per øvelse.'},
    {n:3,start:'2026-12-07',label:'7.–13. des',min:90,days:[[R_('g4')],[ST_('str-b')],[R_('g3')],[X_(30)],[R_('a1')],[ST_('str-a')],[REST_]],note:'Lettuke, avslutter syklus 1. Styrke: ett sett mindre per øvelse.'},
    {n:4,start:'2026-12-14',label:'14.–20. des',min:110,days:[[R_('g7')],[ST_('str-b')],[R_('g3')],[X_(30)],[R_('a2')],[ST_('str-a')],[X_(20)]],note:'Syklus 2 starter. Hopp inn i styrkeøkt A (fra denne uka). Søndag: valgfri kryss på 20 min hvis det går lett.'},
    {n:5,start:'2026-12-21',label:'21.–27. des',min:127,days:[[R_('g9')],[ST_('str-b')],[R_('g5')],[X_('30–40')],[R_('s1')],[ST_('str-a')],[REST_]],note:'Toppuke. Første sone 4-drag (3 × 2 min). Jul: flytt øktene fritt.'},
@@ -548,9 +548,28 @@ const SEED_STYRKE=[
    {n:'Sidebru',sets:3,reps:'20–30 sek per side',load:'Kroppsvekt',note:'Kjernestabilitet.'},
    {n:'Liggende hofteløft, tær mot taket',sets:3,reps:'6–8',load:'Kroppsvekt',note:'Gulvversjon av inverten: bena rett opp, løft hofta av gulvet uten sving.'},
    {n:'L-hold, hendene på stoler eller klosser',sets:4,reps:'10–15 sek',load:'Kroppsvekt',note:'Kompresjon. Start med bøyde knær.'}
+  ]},
+ {id:'kort-mob',name:'Mobilitet',cat:'Kort økt',dur:5,
+  note:'Kontrollerte, dynamiske bevegelser, ikke statisk tøying. Du jobber rolig, med pust og kontroll. Fem bevegelser, hver 1 gang i 45–60 sek (ca. 4–5 min).',
+  ex:[
+   {n:'Lav øgle-flyt (Low lizard flow)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Hofter, lyske, rotasjon. Dypt utfall med hånd i gulvet, skift side underveis. Gå bare så dypt som kneet føles fint.'},
+   {n:'Gå ut → svev → gå inn (Walkout → hover → walk-in)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Hamstrings, kjerne, skuldre. Gå hendene ut til planke, hold et kort svev, gå hendene tilbake og rull opp.'},
+   {n:'Bjørnegang med rotasjon (Bear crawl rotation)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Rygg og skrå magemuskler. Roter overkroppen og løft en hånd mot taket vekselvis.'},
+   {n:'Halvmåne-utfall → hoftehengsel-flyt (Crescent → hinge flow)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Hoftebøyere, balanse, bakside. Fra utfall skyv hofta bakover og strekk forbeinet, tilbake igjen. Skift side.'},
+   {n:'Stående kjernebølge (Standing core wave)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Kjerne og rytme. Bølge fra bekken via ryggen til armene.'}
+  ]},
+ {id:'kort-flow',name:'Flow',cat:'Kort økt',dur:4,
+  note:'Rytme, kontroll og bevegelse. Ikke tungt, ikke stressende, bare flyt. Fire faste øvelser, hver 1 gang i 45–60 sek (3–4 min). Med valgfri høye kneløft som femte øvelse blir det 3¾–5 min.',
+  ex:[
+   {n:'Svevende firfotstilling → planke (Beast → plank flow)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Kjerne og skulderstabilitet. Knær noen centimeter over gulvet, rett ut i høy planke og tilbake.'},
+   {n:'Kontrollert skøyteflyt (Controlled skater flow)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Balanse og hoftekontroll. Skøytesteg side til side uten hopp, myk landing.'},
+   {n:'Myk pogo uten hopp (Soft pogo)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Rytme og ankelarbeid. Fjær på tåballene med hælene opp og ned, tærne forlater ikke gulvet.'},
+   {n:'Reaktivt steg bakover (Reactive step-back)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Koordinasjon og hofte. Små, raske steg bakover i vekselvis rytme, kontroll på kneet.'},
+   {n:'Valgfritt: Høye kneløft i rytme (High-knees)',sets:1,reps:'45–60 sek',load:'Kroppsvekt',note:'Frekvens og løpsrytme. Ta den som rask marsj med høye knær hjemme, slik at det blir stille.'}
   ]}
 ];
 const STYRKE_RETNING=[
+ ['Korte økter: mobilitet og flow','Generelle retningslinjer, ikke medisinsk råd. Lav øgle-flyt, halvmåne-utfall, skøyteflyt og reaktivt steg bakover belaster kneet mest. Hold bøyen under ca. 90° og stopp hvis kneet gir etter, hovner eller gjør mer vondt enn 3 av 10. Ingen hopp: pogo og høye kneløft gjøres som fjæring og marsj, så det blir stille for naboene. Øktene er korte (3–5 min) og kan tas hver morgen, eller som oppvarming før løping eller styrke.'],
  ['Kneet (PCL)','Generelle retningslinjer, ikke medisinsk råd. Vis programmet til en fysioterapeut før du går tungt. Hold kneet under ca. 90° bøy under last. Unngå dype knebøy og tunge hamstring-curls i maskin. Quadriceps-trening (beinpress med kort bevegelse, veggsitt) er trygt og gir kneet støtte. Ingen hopp hjemme. På senteret kommer hopp først fra uke 4 (14. des). Gå lettere hvis kneet gir etter, hovner, gjør mer vondt enn 3 av 10, eller er verre dagen etter.'],
  ['Slik gjør du det','Stopp hvert sett med 2–3 repetisjoner igjen (RPE 7). Uke 1–2 og lettukene (7.–13. des og 28. des–3. jan): ett sett mindre per øvelse. Nok vekt: når alle sett går med 2 repetisjoner igjen, øk med 2,5 kg på stang og 1–2 kg på manual. Hvil 2 min i de store løftene, 60–90 sek ellers. Startvekter er ikke satt – legg inn egne vekter under «belastning» når du har funnet dem.'],
  ['Invert-trappa (toes to bar)','Bena over hodet, og så hofta over skuldrene. Ett trinn om gangen; gå videre når du får 3 × 5 rene repetisjoner uten svinging: 1) Aktiv hang 20–30 sek. 2) Hengende kneløft, knærne mot brystet. 3) Hengende benløft med strake bein til 90°. 4) Tær mot stang. 5) Hofta opp over skuldrene. Hul kropp og liggende hofteløft hjemme gjør samme jobb på gulvet.'],

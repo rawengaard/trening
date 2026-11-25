@@ -61,7 +61,7 @@ ${s.steps.length?`<${H(1)}>Trinn for trinn</${H(1)}>${stepsHtml(s)}`:''}
 ${dist.length?`<${H(1)}>Intensitetsfordeling</${H(1)}><ul>${dist.map(([a,b])=>`<li>${a}: ${b}</li>`).join('')}</ul>`:''}
 ${T&&full?`<${H(1)}>Slik gjennomfører du økten</${H(1)}><p class="muted">${esc(RPE_SHORT)}</p><ol>${T.how.map(x=>`<li>${esc(x)}</li>`).join('')}<li>Bruk opplevd anstrengelse til å finjustere innsatsen underveis i hele økten.</li></ol>
 <${H(1)}>Om øktypen</${H(1)}><p>${esc(T.desc)}</p>`:''}
-${uses&&full?`<${H(1)}>Brukes i planene</${H(1)}><ul>${uses}</ul>`:''}`;
+`;
 }
 for(const s of Object.values(SESSIONS)){
   const p=pathOf('okt',s.id);
@@ -151,12 +151,12 @@ write(pathOf('minplan'),'Min plan frem til nyttår',minplanBody(pathOf('minplan'
 
 /* ---------- styrkeøkter (eksempler) ---------- */
 function styrkeBody(from,h=1){
-  return `<h${h}>Styrkeøkter – eksempler (to per uke)</h${h}><p>Tilpasset gammel PCL-skade, ingen hopp hjemme, og målene markløft, benkpress, pull-ups, ekte push-ups, seter, kompresjon, invert (toes to bar), kjernestabilitet og spenst. Ikke fra 80/20-boka. I appen kan du lage egne styrkeøkter (øvelse, sett, repetisjoner og belastning); de lagres bare i nettleseren og vises ikke her.</p>
+  return `<h${h}>Styrkeøkter og korte økter – eksempler</h${h}><p>Tilpasset gammel PCL-skade, ingen hopp hjemme, og målene markløft, benkpress, pull-ups, ekte push-ups, seter, kompresjon, invert (toes to bar), kjernestabilitet og spenst. Ikke fra 80/20-boka. I tillegg finnes to korte økter (mobilitet og flow, 3–5 min) som kan tas hver morgen. I appen kan du lage egne styrkeøkter (øvelse, sett, repetisjoner og belastning); de lagres bare i nettleseren og vises ikke her.</p>
 `+SEED_STYRKE.map(s=>`<h${h+1} id="${s.id}">${esc(s.name)}</h${h+1}><p><b>Kategori:</b> ${esc(s.cat)}. <b>Varighet:</b> ca. ${s.dur} min.</p><p>${esc(s.note)}</p>
 <div class="tablewrap"><table><tr><th>Øvelse</th><th>Sett × reps</th><th>Belastning</th><th>Merknad</th></tr>${s.ex.map(e=>`<tr><td>${esc(e.n)}</td><td>${e.sets} × ${esc(e.reps)}</td><td>${esc(e.load)}</td><td>${esc(e.note)}</td></tr>`).join('')}</table></div>`).join('')+
   `<h${h+1}>Retningslinjer</h${h+1}>`+STYRKE_RETNING.map(p=>`<h${h+2}>${esc(p[0])}</h${h+2}><p>${esc(p[1])}</p>`).join('');
 }
-write(pathOf('styrke'),'Styrkeøkter',styrkeBody(pathOf('styrke')),'Eksempel-styrkeøkter A (treningssenter) og B (hjemme)','/styrke');
+write(pathOf('styrke'),'Styrkeøkter',styrkeBody(pathOf('styrke')),'Eksempel-styrkeøkter A (treningssenter) og B (hjemme) og korte økter (mobilitet, flow)','/styrke');
 
 /* ---------- teori ---------- */
 function teoriSecs(from){return teori({app:false,pulse:null,href:(k,id)=>rel(from,pathOf(k,id))})}
